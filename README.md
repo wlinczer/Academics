@@ -13,5 +13,5 @@ enforced stack — use the language and tools best suited to the task.
 
 ## Related repos
 
-Part of the `#Repositories` family. See [`CLAUDE.md`](CLAUDE.md) for how these
+Part of the `_Repositories` family. See [`CLAUDE.md`](CLAUDE.md) for how these
 repos share cross-cutting notes with each other.

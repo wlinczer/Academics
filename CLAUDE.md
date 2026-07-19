@@ -25,7 +25,7 @@ the boundary clean: academic work belongs here.
 ## Cross-Repo Notes
 
 The three repos (`personal`, `professional`, `academics`) are siblings under
-`#Repositories`. They share cross-cutting knowledge through an append-only log in
+`_Repositories`. They share cross-cutting knowledge through an append-only log in
 each repo at `docs/cross-repo-notes.md`.
 
 **At the start of a session, if the work touches conventions, tooling, or setup:**

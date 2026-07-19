@@ -3,7 +3,7 @@
 An append-only log for surfacing things worth sharing with the sibling repos
 (`personal`, `professional`). Each repo has its own copy of this file; a Claude
 session in any sibling reads the others at session start (they sit side by side
-under `#Repositories`).
+under `_Repositories`).
 
 ## How to use it
 
