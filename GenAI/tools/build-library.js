@@ -170,7 +170,7 @@ for (const d of docs) {
 </dl>
 ${newer ? `<p class="note">A newer version exists: <a href="${newer.id}.html">${esc(newer.title)} (${newer.version_date})</a>.</p>\n` : ""}<h2>Summary</h2>
 <p>${esc(d.summary)}</p>
-<p><a href="../index.html">Back to Doc Finder</a></p>
+<p><a href="../index.html">Back to Siftr</a></p>
 </main>
 </body>
 </html>

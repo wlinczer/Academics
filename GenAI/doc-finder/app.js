@@ -1,4 +1,4 @@
-// Doc Finder: rule-based simulation of a future AI retrieval system.
+// Siftr staff-layer prototype: rule-based simulation of a future AI retrieval system.
 // Everything an answer says comes from a document's `summary` field.
 
 const STOPWORDS = new Set(
