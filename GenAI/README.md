@@ -1,79 +1,62 @@
-# Generative AI + Algorithmic Systems (ESTM 60244)
+# Project Prototype MVP: Siftr (staff-layer prototype)
 
-## Project Prototype MVP: Doc Finder
+Siftr is a knowledge assistant for nonprofit behavioral health organizations; this
+prototype is its staff layer, where a clinician asks where a form is or how a
+procedure works and gets the current document with its version date.
 
-**Live prototype:** https://wlinczer.github.io/Academics/genai-doc-finder/
-**Source:** [`doc-finder/`](doc-finder/)
+## How to open
 
-Doc Finder is a Wizard-of-Oz prototype for my Josselyn capstone. A clinician at a
-behavioral health nonprofit types where a form is or how a procedure works. They get
-a short answer, a link to the current document, and its version date. It surfaces
-documents only. It never fills or submits forms.
+Live: https://wlinczer.github.io/Academics/genai-doc-finder/
+(or open `GenAI/doc-finder/index.html` locally)
 
-The organization ("Northshore Family Health") and all 18 documents are fictional.
-No real Josselyn documents or client data are used.
+## What the first working slice does
 
-### Assumption being tested
+One flow: type a question, get an answer card with the document title, folder,
+version date and a link to the document. It follows the Project Problem Framing
+(Oct 2) and uses a fictional 18-document library for "Northshore Family Health",
+with no real Josselyn documents or client data. The admin layer, accounts and live
+document systems are out of scope.
 
-Clinicians' wording doesn't match document titles ("release of information" vs.
-"Authorization to Disclose"), and they need the *current* version without the tool
-inventing anything. Each answer shows what plain title-keyword search would have
-returned, for comparison.
+## AI role and prototype status
 
-### How it works
-
-- `library.json` holds the fictional documents (title, folder, version date,
-  status, synonyms, summary, link). `library.js` is the same data, so the page also
-  works when opened directly from disk.
-- `app.js` scores each document by overlap between the question's words and the
-  document's title (weight 3), synonyms (weight 2) and summary (weight 1), with
-  lowercasing, punctuation stripping, stopword removal and simple stemming. Whole
-  synonym phrases get a bonus.
-- A match must explain at least 75% of the meaningful words in the question.
-  Otherwise the tool says it couldn't find a document instead of guessing. This is
-  why "telehealth consent" doesn't return the general Consent for Treatment form.
-- Superseded versions are never the answer. When an older version exists, the card
-  says so with its date.
-- If a second current document scores close to the top match, both are shown with
-  "These may conflict, confirm with your supervisor."
-- The answer text is the document's `summary` field, verbatim. Nothing else.
-- Baseline: "Plain keyword search (title words only)" uses the same lowercasing,
-  punctuation stripping and stopwords, and matches exact title words. No synonyms,
-  summaries or stemming.
-
-### Try it
-
-| Question | Expected behavior |
+| | |
 |---|---|
-| Where is the release of information form? | Authorization to Disclose (keyword search: nothing) |
-| Is this the current expense reimbursement form? | 2025 version, notes the 2019 version |
-| Which consent form do we use? | 2025 Consent for Treatment, notes the 2022 version |
-| How do I handle a client records request? | Two current procedures, conflict warning |
-| Do we have a telehealth consent form? | Not found, example questions shown again |
-| Where is the FMLA leave request form? | Not found |
-| (empty) | Inline prompt, no answer card |
+| **Intended future AI role** | Retrieval-augmented generation over a clinician's real document systems (Navex, SharePoint, Clinical Campus). Given a question in the clinician's own words, find the most relevant current document and write a short answer grounded in it, with a link and version date. |
+| **Works now** | Question box and answer card; version preference with an older-version note; conflict warning when two current documents match; not-found response that shows the example questions again; empty input handling; title-keyword baseline comparison under each answer. |
+| **Simulated or manual** | Language understanding and answer writing. Retrieval uses hand-written synonyms and keyword scoring over a fictional library. Answer text is each document's pre-written summary. No live AI model or API is used. |
 
-### Run locally
+## Test results
+
+Run against the live site with Playwright on 2026-10-13, after the Siftr rename.
+
+| Test | Input or action | What happened | Pass/partial/fail |
+|---|---|---|---|
+| Typical | "Where is the release of information form?" (pass if it links to Authorization to Disclose) | One answer card: Authorization to Disclose, Clinical Forms, version 2025-03-10, current, linking to `library/authorization-to-disclose.html`. Keyword baseline returned nothing. | Pass |
+| Challenge | "Is this the current expense reimbursement form?" (pass if it links to the 2025 version and notes the 2019 version) | One card: Expense Reimbursement Form, version 2025-01-15, current, linking to `library/expense-reimbursement-2025.html`, with "An older version exists (2019-07-01). Use the 2025-01-15 version above." Keyword baseline listed the 2019 version first. | Pass |
+| Invalid or empty | "Do we have a telehealth consent form?", then an empty submit (pass if it says it cannot find it, invents no link, and empty input shows an inline message with no card) | Telehealth: "I couldn't find a matching document. Try different wording or ask your supervisor.", no answer card, no document link, example questions shown again. Empty: "Type a question first, for example where a form is or how a procedure works.", no card. | Pass |
+
+Additional checks (extra):
+
+- Consent chip ("Which consent form do we use?"): returned Consent for Treatment 2025-02-01 with a note about the 2022-09-01 version. Pass.
+- Conflict chip ("How do I handle a client records request?"): showed Medical Records Procedure (2025) and Records Request Procedure (2024) with "These may conflict, confirm with your supervisor." Pass.
+- FMLA ("Where is the FMLA leave request form?"): not found, no card, examples shown again. Pass.
+
+## Known limitations
+
+1. **Retrieval is hand-written.** Synonyms and thresholds were tuned on 18 fictional documents, so this tests whether the experience communicates the idea, not whether real retrieval works. Next step: evaluate an embedding or LLM retriever on real clinician questions from the next interview round.
+2. **It tests findability, not upkeep.** The prototype checks finding a document and picking the current version, but my Fall Discovery Memo (Oct 11) suggests stale or unowned sources may cause more lost time than findability. Next step: trace a sample of staff time-loss stories to see whether the source was stale or current but hard to find, and build the admin-layer content-owner flow if upkeep dominates.
+3. **No saved data, other roles or Teams surface.** There is no view for supervisors or content owners, and the sponsor team's consensus moved toward Teams on Oct 5. Next step: prototype the answer card inside a Teams chat and add an owner view that flags stale documents.
+
+## Run locally
 
 Open `doc-finder/index.html` in a browser. No build step, dependencies or API keys.
 To change the library, edit `tools/build-library.js` and run
 `node tools/build-library.js` to regenerate the JSON, JS and document pages.
 
-### Deployment
+## Deployment
 
 `.github/workflows/pages-genai-doc-finder.yml` publishes only a staged copy of
 `GenAI/doc-finder/` to GitHub Pages under `/genai-doc-finder/`.
-
-### Known limitations
-
-- **The synonyms are hand-written.** This demo tests whether the experience
-  communicates the idea (plain-language question in, current document out, honest
-  "not found"). It does not test whether real retrieval would work on Josselyn's
-  actual documents and staff wording. A real system would need an AI model or
-  embeddings, plus evaluation on real queries.
-- The thresholds were tuned on 18 documents and a handful of test questions. They
-  would not carry over to a real library.
-- No live AI model, accounts, database or analytics.
 
 ## Course notes
 
