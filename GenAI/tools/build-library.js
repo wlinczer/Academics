@@ -149,6 +149,8 @@ fs.writeFileSync(
     "window.LIBRARY = " + JSON.stringify(docs, null, 2) + ";\n"
 );
 
+const MARK = '<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="7.5" r="1.9" fill="currentColor"/><circle cx="12" cy="7.5" r="1.9" fill="currentColor"/><circle cx="17" cy="7.5" r="1.9" fill="currentColor"/><circle cx="9.5" cy="12.2" r="1.9" fill="currentColor"/><circle cx="14.5" cy="12.2" r="1.9" fill="currentColor"/><circle cx="12" cy="17" r="2.3" fill="var(--accent)"/></svg>';
+
 for (const d of docs) {
   const newer = docs.find((x) => x.supersedes === d.id);
   const html = `<!doctype html>
@@ -156,21 +158,27 @@ for (const d of docs) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(d.title)} (${d.version_date})</title>
+<title>${esc(d.title)} (${d.version_date}) · Siftr</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../style.css">
 </head>
-<body>
-<main>
-<p class="banner">Fictional sample document. Northshore Family Health is not a real organization.</p>
+<body class="doc-page">
+<header class="topbar">
+<a class="brand" href="../index.html" aria-label="Siftr home">${MARK}<span class="wordmark">SIFTR</span></a>
+</header>
+<main class="doc-main">
+<a class="back" href="../index.html">Back to Siftr</a>
+<article class="doc-sheet">
+<p class="label">Fictional sample document. Northshore Family Health is not a real organization.</p>
 <h1>${esc(d.title)}</h1>
 <dl class="meta">
 <dt>Folder</dt><dd>${esc(d.folder)}</dd>
 <dt>Version date</dt><dd>${d.version_date}</dd>
-<dt>Status</dt><dd class="status-${d.status}">${d.status}</dd>
+<dt>Status</dt><dd><span class="pill ${d.status === "current" ? "pill-current" : "pill-older"}">${d.status === "current" ? "Current" : "Older version"}</span></dd>
 </dl>
 ${newer ? `<p class="note">A newer version exists: <a href="${newer.id}.html">${esc(newer.title)} (${newer.version_date})</a>.</p>\n` : ""}<h2>Summary</h2>
 <p>${esc(d.summary)}</p>
-<p><a href="../index.html">Back to Siftr</a></p>
+</article>
 </main>
 </body>
 </html>

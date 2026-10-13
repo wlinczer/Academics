@@ -130,6 +130,12 @@ if (typeof document !== "undefined") {
   ];
   const lib = window.LIBRARY;
   const $ = (id) => document.getElementById(id);
+  const thread = $("thread"), emptyState = $("empty"), input = $("q"), hint = $("hint");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const FOLDER_ICON =
+    '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v8.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>';
+  let busy = false, hintTimer;
+
   const el = (tag, cls, text) => {
     const n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -137,53 +143,134 @@ if (typeof document !== "undefined") {
     return n;
   };
 
-  function renderChips(target) {
-    target.replaceChildren();
+  function chipList() {
+    const wrap = el("div", "chips");
     for (const ex of EXAMPLES) {
       const b = el("button", "chip", ex);
       b.type = "button";
-      b.addEventListener("click", () => { $("q").value = ex; ask(); });
-      target.appendChild(b);
+      b.addEventListener("click", () => send(ex));
+      wrap.appendChild(b);
     }
+    return wrap;
   }
 
-  function card({ doc, older }) {
-    const c = el("article", "card");
-    c.appendChild(el("p", "answer", doc.summary));
-    const h = el("h3");
-    const a = el("a", null, doc.title);
+  function scrollDown() {
+    thread.parentElement.scrollTo({ top: thread.parentElement.scrollHeight, behavior: reduceMotion.matches ? "auto" : "smooth" });
+  }
+
+  function botRow() {
+    const row = el("div", "msg bot");
+    const avatar = el("span", "avatar");
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.appendChild($("mark").content.cloneNode(true));
+    row.appendChild(avatar);
+    const body = el("div", "bot-body");
+    row.appendChild(body);
+    return { row, body };
+  }
+
+  function docCard({ doc, older }) {
+    const c = el("article", "doc-card");
+    const folder = el("p", "doc-folder");
+    folder.innerHTML = FOLDER_ICON;
+    folder.appendChild(document.createTextNode(doc.folder));
+    c.appendChild(folder);
+    c.appendChild(el("h3", "doc-title", doc.title));
+    const meta = el("p", "doc-meta");
+    meta.appendChild(document.createTextNode(`Version ${doc.version_date} `));
+    meta.appendChild(el("span", `pill ${doc.status === "current" ? "pill-current" : "pill-older"}`, doc.status === "current" ? "Current" : "Older version"));
+    c.appendChild(meta);
+    const a = el("a", "open-doc", "Open document");
     a.href = doc.link;
-    h.appendChild(a);
-    c.appendChild(h);
-    c.appendChild(el("p", "meta-line", `${doc.folder} · Version ${doc.version_date} · ${doc.status}`));
+    c.appendChild(a);
+    const frag = document.createDocumentFragment();
+    frag.appendChild(c);
     for (const o of older) {
-      c.appendChild(el("p", "note", `An older version exists (${o.version_date}). Use the ${doc.version_date} version above.`));
+      frag.appendChild(el("p", "note", `An older version exists (${o.version_date}). Use the ${doc.version_date} version above.`));
     }
-    return c;
+    return frag;
   }
 
-  function ask() {
-    const out = $("results");
-    const question = $("q").value;
-    out.replaceChildren();
-    if (!question.trim()) {
-      out.appendChild(el("p", "hint", "Type a question first, for example where a form is or how a procedure works."));
-      return;
-    }
+  function compare(question) {
+    const d = el("details", "compare");
+    d.appendChild(el("summary", null, "Compare with keyword search"));
+    d.appendChild(el("p", "baseline", `Plain keyword search (title words only) would have returned: ${keywordLine(keywordSearch(question, lib))}`));
+    return d;
+  }
+
+  function reply(question, body) {
     const r = retrieve(question, lib);
     if (r.kind === "none") {
-      out.appendChild(el("p", "miss", "I couldn't find a matching document. Try different wording or ask your supervisor."));
-      out.appendChild(el("p", "hint", "Or try one of these:"));
-      const chips = el("div", "chips");
-      renderChips(chips);
-      out.appendChild(chips);
+      body.appendChild(el("p", "bubble", "I couldn't find a matching document. Try different wording or ask your supervisor."));
+      body.appendChild(el("p", "chips-label", "Or try one of these:"));
+      body.appendChild(chipList());
     } else {
-      if (r.conflict) out.appendChild(el("p", "warn", "These may conflict, confirm with your supervisor."));
-      r.results.forEach((x) => out.appendChild(card(x)));
+      if (r.conflict) body.appendChild(el("p", "warn", "These may conflict, confirm with your supervisor."));
+      for (const x of r.results) {
+        body.appendChild(el("p", "bubble", x.doc.summary));
+        body.appendChild(docCard(x));
+      }
     }
-    out.appendChild(el("p", "baseline", `Plain keyword search (title words only) would have returned: ${keywordLine(keywordSearch(question, lib))}`));
+    body.appendChild(compare(question));
   }
 
-  renderChips($("examples"));
-  $("ask-form").addEventListener("submit", (e) => { e.preventDefault(); ask(); });
+  function showHint(text) {
+    hint.textContent = text;
+    hint.classList.add("show");
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => hint.classList.remove("show"), 3000);
+  }
+
+  function send(text) {
+    if (busy) return;
+    if (!text.trim()) { showHint("Type a question first"); input.focus(); return; }
+    emptyState.hidden = true;
+    const user = el("div", "msg user");
+    user.appendChild(el("p", "bubble", text));
+    thread.appendChild(user);
+    input.value = "";
+    autosize();
+
+    const { row, body } = botRow();
+    const finish = () => { reply(text, body); busy = false; scrollDown(); };
+    if (reduceMotion.matches) {
+      thread.appendChild(row);
+      finish();
+      return;
+    }
+    busy = true;
+    const dots = el("div", "typing");
+    dots.setAttribute("aria-label", "Siftr is typing");
+    dots.append(el("span"), el("span"), el("span"));
+    body.appendChild(dots);
+    thread.appendChild(row);
+    scrollDown();
+    setTimeout(() => { dots.remove(); row.classList.add("reveal"); finish(); }, 600 + Math.random() * 300);
+  }
+
+  function autosize() {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 160) + "px";
+  }
+
+  $("empty-chips").appendChild(chipList());
+  $("composer").addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(input.value); }
+  });
+  input.addEventListener("input", autosize);
+  $("new-chat").addEventListener("click", () => {
+    thread.replaceChildren();
+    emptyState.hidden = false;
+    busy = false;
+    input.value = "";
+    autosize();
+    input.focus();
+  });
+  const details = $("details-toggle");
+  details.addEventListener("click", () => {
+    const open = details.getAttribute("aria-expanded") !== "true";
+    details.setAttribute("aria-expanded", String(open));
+    $("disclosure-full").hidden = !open;
+  });
 }

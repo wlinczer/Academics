@@ -11,8 +11,9 @@ Live: https://wlinczer.github.io/Academics/siftr/
 
 ## What the first working slice does
 
-One flow: type a question, get an answer card with the document title, folder,
-version date and a link to the document. It follows the Project Problem Framing
+One flow in a chat interface: type a question (or tap a suggested one) and Siftr
+replies with a short message and a document card showing the title, folder,
+version date, a status pill and an "Open document" link. It follows the Project Problem Framing
 (Oct 2) and uses a fictional 18-document library for "Northshore Family Health",
 with no real Josselyn documents or client data. The admin layer, accounts and live
 document systems are out of scope.
@@ -27,13 +28,13 @@ document systems are out of scope.
 
 ## Test results
 
-Run against the live site with Playwright on 2026-10-13, after the Siftr rename.
+Run with Playwright on 2026-10-13 after the chat redesign, locally on the branch and again on the live site after merging.
 
 | Test | Input or action | What happened | Pass/partial/fail |
 |---|---|---|---|
-| Typical | "Where is the release of information form?" (pass if it links to Authorization to Disclose) | One answer card: Authorization to Disclose, Clinical Forms, version 2025-03-10, current, linking to `library/authorization-to-disclose.html`. Keyword baseline returned nothing. | Pass |
-| Challenge | "Is this the current expense reimbursement form?" (pass if it links to the 2025 version and notes the 2019 version) | One card: Expense Reimbursement Form, version 2025-01-15, current, linking to `library/expense-reimbursement-2025.html`, with "An older version exists (2019-07-01). Use the 2025-01-15 version above." Keyword baseline listed the 2019 version first. | Pass |
-| Invalid or empty | "Do we have a telehealth consent form?", then an empty submit (pass if it says it cannot find it, invents no link, and empty input shows an inline message with no card) | Telehealth: "I couldn't find a matching document. Try different wording or ask your supervisor.", no answer card, no document link, example questions shown again. Empty: "Type a question first, for example where a form is or how a procedure works.", no card. | Pass |
+| Typical | "Where is the release of information form?" (pass if it links to Authorization to Disclose) | Siftr replied with the document summary and one card: Authorization to Disclose, Clinical Forms, Version 2025-03-10, Current, "Open document" linking to `library/authorization-to-disclose.html`. Compare with keyword search: nothing. | Pass |
+| Challenge | "Is this the current expense reimbursement form?" (pass if it links to the 2025 version and notes the 2019 version) | Siftr replied with one card: Expense Reimbursement Form, Version 2025-01-15, Current, linking to `library/expense-reimbursement-2025.html`, followed by "An older version exists (2019-07-01). Use the 2025-01-15 version above." Compare with keyword search listed the 2019 version first. | Pass |
+| Invalid or empty | "Do we have a telehealth consent form?", then an empty submit (pass if it says it cannot find it, invents no link, and empty input shows an inline hint and adds no message) | Telehealth: "I couldn't find a matching document. Try different wording or ask your supervisor.", no document card or link, and the 4 example questions shown again inside the reply. Empty send (and whitespace only): no message added, and the hint "Type a question first" appeared above the composer, then faded. | Pass |
 
 Additional checks (extra):
 
