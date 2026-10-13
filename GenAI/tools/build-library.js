@@ -160,7 +160,7 @@ for (const d of docs) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(d.title)} (${d.version_date}) · Siftr</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../style.css?v=2">
+<link rel="stylesheet" href="../style.css?v=5">
 </head>
 <body class="doc-page">
 <header class="topbar">

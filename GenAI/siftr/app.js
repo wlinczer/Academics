@@ -221,8 +221,11 @@ if (typeof document !== "undefined") {
     hintTimer = setTimeout(() => hint.classList.remove("show"), 3000);
   }
 
+  // Messages sent while a reply is in progress wait here and are answered in order.
+  const queue = [];
+  let chatId = 0;
+
   function send(text) {
-    if (busy) return;
     if (!text.trim()) { showHint("Type a question first"); input.focus(); return; }
     emptyState.hidden = true;
     const user = el("div", "msg user");
@@ -230,20 +233,34 @@ if (typeof document !== "undefined") {
     thread.appendChild(user);
     input.value = "";
     autosize();
+    scrollDown();
+    queue.push({ text, user });
+    pump();
+  }
 
+  function pump() {
+    if (busy || !queue.length) return;
+    const { text, user } = queue.shift();
+    const id = chatId;
     const { row, body } = botRow();
-    const finish = () => { reply(text, body); busy = false; scrollDown(); };
+    const finish = () => {
+      if (id !== chatId) return; // chat was cleared while typing
+      reply(text, body);
+      busy = false;
+      scrollDown();
+      pump();
+    };
+    busy = true;
     if (reduceMotion.matches) {
-      thread.appendChild(row);
+      user.after(row);
       finish();
       return;
     }
-    busy = true;
     const dots = el("div", "typing");
     dots.setAttribute("aria-label", "Siftr is typing");
     dots.append(el("span"), el("span"), el("span"));
     body.appendChild(dots);
-    thread.appendChild(row);
+    user.after(row);
     scrollDown();
     setTimeout(() => { dots.remove(); row.classList.add("reveal"); finish(); }, 600 + Math.random() * 300);
   }
@@ -260,6 +277,8 @@ if (typeof document !== "undefined") {
   });
   input.addEventListener("input", autosize);
   $("new-chat").addEventListener("click", () => {
+    chatId++;
+    queue.length = 0;
     thread.replaceChildren();
     emptyState.hidden = false;
     busy = false;

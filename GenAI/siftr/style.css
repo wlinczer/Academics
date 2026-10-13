@@ -82,7 +82,10 @@ body.app { height: 100vh; height: 100dvh; display: grid; grid-template-rows: aut
 .scroller { overflow-y: auto; padding: var(--space-4); }
 
 /* Empty state */
-.empty { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: var(--space-3); }
+.empty { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; gap: var(--space-3); }
+/* auto margins center the empty state without clipping its top on short screens */
+.empty > :first-child { margin-top: auto; }
+.empty > :last-child { margin-bottom: auto; }
 .empty[hidden] { display: none; }
 .empty .wordmark { font-size: 20px; }
 .greeting { margin: 0 0 var(--space-2); font-size: 22px; font-weight: 500; }
@@ -169,6 +172,30 @@ body.doc-page .topbar { position: sticky; }
 dl.meta { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 var(--space-4); }
 dt { color: var(--muted); }
 dd { margin: 0; }
+
+/* Small or short screens: tighten the empty state so all suggestions fit */
+@media (max-width: 380px), (max-height: 640px) {
+  .scroller { padding: var(--space-3); }
+  .empty { gap: var(--space-2); }
+  .mark-lg { width: 34px; height: 34px; }
+  .empty .wordmark { font-size: 17px; }
+  .greeting { font-size: 19px; margin-bottom: var(--space-1); }
+  .chip { font-size: 14px; padding: 6px 12px; }
+  .chips { gap: 6px; }
+  .dock { padding-top: var(--space-1); }
+  .disclosure { font-size: 12px; margin-top: 6px; }
+}
+/* Very short screens (small phones, landscape): the header already shows the logo */
+@media (max-height: 600px) {
+  .empty-brand { display: none; }
+  .topbar { padding-top: max(2px, env(safe-area-inset-top)); padding-bottom: 2px; }
+  .greeting { font-size: 18px; margin-top: auto; }
+  .disclosure { margin-top: 4px; }
+}
+/* Wide screens: a little more breathing room */
+@media (min-width: 1024px) {
+  .scroller { padding: var(--space-6); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
