@@ -6,8 +6,8 @@ procedure works and gets the current document with its version date.
 
 ## How to open
 
-Live: https://wlinczer.github.io/Academics/genai-doc-finder/
-(or open `GenAI/doc-finder/index.html` locally)
+Live: https://wlinczer.github.io/Academics/siftr/
+(or open `GenAI/siftr/index.html` locally)
 
 ## What the first working slice does
 
@@ -49,14 +49,15 @@ Additional checks (extra):
 
 ## Run locally
 
-Open `doc-finder/index.html` in a browser. No build step, dependencies or API keys.
+Open `siftr/index.html` in a browser. No build step, dependencies or API keys.
 To change the library, edit `tools/build-library.js` and run
 `node tools/build-library.js` to regenerate the JSON, JS and document pages.
 
 ## Deployment
 
-`.github/workflows/pages-genai-doc-finder.yml` publishes only a staged copy of
-`GenAI/doc-finder/` to GitHub Pages under `/genai-doc-finder/`.
+`.github/workflows/pages-siftr.yml` publishes only a staged copy of
+`GenAI/siftr/` to GitHub Pages under `/siftr/`. A small redirect stub at
+the old `/genai-doc-finder/` path sends visitors to the new URL.
 
 ## Course notes
 

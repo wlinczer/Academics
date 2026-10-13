@@ -1,0 +1,50 @@
+name: Deploy Siftr to Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["GenAI/siftr/**", ".github/workflows/pages-siftr.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage only the prototype
+        run: |
+          mkdir -p _site/siftr
+          cp -r GenAI/siftr/. _site/siftr/
+      - name: Redirect stub at the old path
+        run: |
+          mkdir -p _site/genai-doc-finder
+          cat > _site/genai-doc-finder/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+          <meta charset="utf-8">
+          <meta http-equiv="refresh" content="0; url=/Academics/siftr/">
+          <link rel="canonical" href="/Academics/siftr/">
+          <title>Siftr has moved</title>
+          </head>
+          <body><p><a href="/Academics/siftr/">Siftr has moved here.</a></p></body>
+          </html>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

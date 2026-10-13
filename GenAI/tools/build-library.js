@@ -1,10 +1,10 @@
-// Generates the fictional Doc Finder library: library.json, library.js (same data,
+// Generates the fictional Siftr library: library.json, library.js (same data,
 // so index.html works from file://), and one viewable page per document.
 // Run: node GenAI/tools/build-library.js
 const fs = require("fs");
 const path = require("path");
 
-const OUT = path.join(__dirname, "..", "doc-finder");
+const OUT = path.join(__dirname, "..", "siftr");
 const CF = "Clinical Forms";
 const PC = "Procedures & Compliance";
 
