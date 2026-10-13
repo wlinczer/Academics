@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doc Finder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+<p class="banner">Prototype: answers come from a rule-based simulation of a future AI retrieval system, not a live AI model. All documents are fictional.</p>
+<h1>Doc Finder</h1>
+<p class="sub">Northshore Family Health (fictional)</p>
+<p>Ask where a form is or how a procedure works, and get the current document with its version date.</p>
+<form id="ask-form">
+  <label for="q" class="sr">Your question</label>
+  <input id="q" type="text" autocomplete="off" placeholder="e.g. Where is the release of information form?">
+  <button type="submit">Ask</button>
+</form>
+<p class="hint">Try an example:</p>
+<div id="examples" class="chips"></div>
+<section id="results" aria-live="polite"></section>
+<footer>Retrieval uses hand-written synonyms to stand in for AI language understanding. Doc Finder only points to documents. It never fills or submits forms.</footer>
+</main>
+<script src="library.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
